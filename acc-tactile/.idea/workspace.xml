@@ -6,7 +6,7 @@
     </shared>
   </component>
   <component name="AndroidLogFilters">
-    <option name="TOOL_WINDOW_CUSTOM_FILTER" value="LineChart" />
+    <option name="TOOL_WINDOW_CUSTOM_FILTER" value="fatal" />
     <option name="TOOL_WINDOW_CONFIGURED_FILTER" value="Show only selected application" />
   </component>
   <component name="AutoImportSettings">
@@ -66,10 +66,15 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="DEBUGGABLE_DEVICE" value="oneplus-oneplus_a6010-ac5f02ad" />
+    <property name="DEBUGGABLE_PROCESS" value="com.nopalyer.mpchart" />
+    <property name="DEBUGGER_ID" value="Auto" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="SHOW_ALL_PROCESSES" value="false" />
+    <property name="android-custom-view/Users/mohitloganathan/.gradle/caches/modules-2/files-2.1/com.github.PhilJay/MPAndroidChart/v3.1.0/45d3ce505f744a595313d5eb84efd3ca3c8d2d04/MPAndroidChart-v3.1.0-sources.jar!/com/github/mikephil/charting/charts/BarChart.java_SELECTED" value="BarChart" />
     <property name="android-custom-view/Users/mohitloganathan/.gradle/caches/modules-2/files-2.1/com.github.PhilJay/MPAndroidChart/v3.1.0/a93f278fa885a682f8d89d82ffd259d5a9635f7b/MPAndroidChart-v3.1.0-sources.jar!/com/github/mikephil/charting/charts/BarChart.java_SELECTED" value="BarChart" />
     <property name="android-custom-view/Users/mohitloganathan/.gradle/caches/modules-2/files-2.1/com.github.PhilJay/MPAndroidChart/v3.1.0/a93f278fa885a682f8d89d82ffd259d5a9635f7b/MPAndroidChart-v3.1.0-sources.jar!/com/github/mikephil/charting/charts/BarLineChartBase.java_SELECTED" value="BarLineChartBase" />
     <property name="android-custom-view/Users/mohitloganathan/.gradle/caches/modules-2/files-2.1/com.github.PhilJay/MPAndroidChart/v3.1.0/a93f278fa885a682f8d89d82ffd259d5a9635f7b/MPAndroidChart-v3.1.0-sources.jar!/com/github/mikephil/charting/charts/Chart.java_SELECTED" value="Chart" />
@@ -80,10 +85,16 @@
     <property name="project.structure.side.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
+    <key name="android.template.-476686145">
+      <recent name="com.nopalyer.mpchart" />
+    </key>
     <key name="android.template.-1769646128">
       <recent name="com.nopalyer.mpchart" />
     </key>
     <key name="android.template.1001136011">
+      <recent name="com.nopalyer.mpchart" />
+    </key>
+    <key name="android.template.-2100124664">
       <recent name="com.nopalyer.mpchart" />
     </key>
   </component>

@@ -1,9 +1,12 @@
 package com.nopalyer.mpchart;
 
-import android.Manifest;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,128 +18,111 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
 
-public class BarChartActivitySpeechToTextActivity extends AppCompatActivity {
+public class LineChartSpeechToTextActivity extends AppCompatActivity {
 
-    private static final String TAG = "BarChartSpeechToText";
+    private static final String TAG = "LineChartSToTActivity";
     private final int REQUEST_CODE_SPEECH_INPUT = 22;
-    private ArrayList<BarEntry> barArraylist;
-    private TextView xLabel;
-    private TextView yLabel;
+    private final ArrayList<Entry> lineDataList = new ArrayList<>();
     private TextToSpeech textToSpeech;
     private Button speechToTextButton;
-    private final boolean isStackedBarChart = false;
-    private float selectedYIndex = -1;
-    private final GRAPH_AXIS graphAxis = GRAPH_AXIS.ABOVE_AXIS;
-    private int maxBarValue = Integer.MIN_VALUE;
-    private int minBarValue = Integer.MAX_VALUE;
-    private final boolean continuousBars = false;
+    private TextView xLabel;
+    private TextView yLabel;
+
+    private boolean isSolidLine = true;
 
     // Features which can be turned on/off
     private boolean shouldVibrate = false;
     private boolean shouldSpeak = true;
-
-    enum GRAPH_AXIS {
-        BELOW_AXIS,
-        ABOVE_AXIS,
-        MIXED
-    }
 
     enum FEATURES {
         AUDIO,
         TACTILE
     }
 
-    boolean areBarsVertical = true;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bar_chart_speech_to_text);
+        setContentView(R.layout.activity_line_chart);
 
+        speechToTextButton = findViewById(R.id.speechToText);
+        LineChart lineChart = findViewById(R.id.lineChart);
         xLabel = findViewById(R.id.xlabel);
         yLabel = findViewById(R.id.ylabel);
         yLabel.setRotation(90f);
-        speechToTextButton = findViewById(R.id.speechToText);
 
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+        final LineDataSet lineDataSet = new LineDataSet(getLineChartDataSet(), "solid line");
+        final LineDataSet lineDataSet2 = new LineDataSet(getLineChartDataSet2(), "dashed line");
+        final ArrayList<ILineDataSet> iLineDataSets = new ArrayList<>();
+        final ArrayList<LineDataSet> lineDataSets = new ArrayList<>();
+        iLineDataSets.add(lineDataSet);
+        lineDataSets.add(lineDataSet);
+        isSolidLine = true;
 
-            int REQUEST_MICROPHONE = 1;
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.RECORD_AUDIO},
-                    REQUEST_MICROPHONE);
-
-        }
-
-        final BarChart barChart = findViewById(R.id.barchart);
-        getData();
-        BarDataSet barDataSet = new BarDataSet(barArraylist, "Time (years) vs Human Population (Billions)");
-        BarData barData = new BarData(barDataSet);
-        barData.setBarWidth(0.5f);
-        barChart.setData(barData);
-
+        LineData lineData = new LineData(iLineDataSets);
+        lineChart.setData(lineData);
+        setupLineChart(lineChart);
+        setupLineChartProperties(lineDataSets);
+        setChartValues(lineChart);
         setup();
-        setupBarDataSet(barDataSet);
-        setBarChartProperties(barChart);
-        setChartValues(barChart);
+    }
+
+    private void setupLineChartProperties(@NonNull final ArrayList<LineDataSet> lineDataSets) {
+        for (LineDataSet lineDataSet : lineDataSets) {
+            lineDataSet.setColor(Color.BLUE);
+            lineDataSet.setCircleColor(Color.RED);
+            lineDataSet.setDrawCircles(true);
+            lineDataSet.setLineWidth(8);
+            lineDataSet.setCircleRadius(6);
+            lineDataSet.setCircleHoleRadius(6);
+            lineDataSet.setValueTextSize(10);
+            lineDataSet.setValueTextColor(Color.BLACK);
+        }
+    }
+
+    private void setupLineChart(@NonNull final LineChart lineChart) {
+        lineChart.invalidate();
+        lineChart.setNoDataText("Data not Available");
+        lineChart.setDoubleTapToZoomEnabled(false);
+        lineChart.setHorizontalScrollBarEnabled(false);
+        lineChart.setVerticalScrollBarEnabled(false);
+        lineChart.setDrawGridBackground(false);
+        lineChart.getXAxis().setDrawGridLines(false);
+        lineChart.getAxisLeft().setDrawGridLines(false);
+        lineChart.getAxisRight().setEnabled(false);
+        lineChart.getAxisRight().setDrawGridLines(false);
     }
 
     /**
-     * Setting properties of bar data set
+     * Listeners callbacks to implement functionality when lines are long pressed/highlighted
      *
-     * @param barDataSet
+     * @param lineChart LineChart on which the callbacks are defined
      */
-    private void setupBarDataSet(final BarDataSet barDataSet) {
-        barDataSet.setColors(ColorTemplate.COLORFUL_COLORS);
-        barDataSet.setValueTextColor(Color.BLACK);
-        barDataSet.setValueTextSize(16f);
-    }
+    private void setChartValues(final LineChart lineChart) {
+        textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status != TextToSpeech.ERROR) {
+                    textToSpeech.setLanguage(Locale.UK);
+                }
+            }
+        });
 
-    /**
-     * Setting all the bar chart related properties
-     *
-     * @param barChart
-     */
-    private void setBarChartProperties(final BarChart barChart) {
-        barChart.getDescription().setEnabled(true);
-        barChart.setMaxHighlightDistance(10);
-        barChart.setDoubleTapToZoomEnabled(false);
-        barChart.setHorizontalScrollBarEnabled(false);
-        barChart.setVerticalScrollBarEnabled(false);
-        barChart.getXAxis().setDrawGridLines(false);
-        barChart.getAxisLeft().setDrawGridLines(false);
-    }
-
-    /**
-     * Listeners callbacks to implement functionality when bars are long pressed/highlighted
-     *
-     * @param barChart Barchart on which the callbacks are defined
-     */
-    private void setChartValues(final BarChart barChart) {
-        barChart.setOnLongClickListener(new View.OnLongClickListener() {
+        lineChart.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
                 // Need to check what can be done here
@@ -144,75 +130,36 @@ public class BarChartActivitySpeechToTextActivity extends AppCompatActivity {
             }
         });
 
-        barChart.setOnChartGestureListener(new OnChartGestureListener() {
-            @Override
-            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-
-            }
-
-            @Override
-            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-
-            }
-
-            @Override
-            public void onChartLongPressed(MotionEvent me) {
-
-            }
-
-            @Override
-            public void onChartDoubleTapped(MotionEvent me) {
-
-            }
-
-            @Override
-            public void onChartSingleTapped(MotionEvent me) {
-                Entry entry = barChart.getEntryByTouchPoint(me.getX(), me.getY());
-                if (entry != null) {
-                    selectedYIndex = me.getY();
-                }
-            }
-
-            @Override
-            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
-
-            }
-
-            @Override
-            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
-
-            }
-
-            @Override
-            public void onChartTranslate(MotionEvent me, float dX, float dY) {
-
-            }
-        });
-
-        barChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+        lineChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @RequiresApi(api = Build.VERSION_CODES.Q)
             @Override
             public void onValueSelected(Entry e, Highlight h) {
-                //barChart.highlightValue(null);
-                int x = barChart.getBarData().getDataSetForEntry(e).getEntryIndex((BarEntry) e);
-                Log.d(TAG, h.getYPx() + " " + e.getY());
-                if (h.getYPx() <= selectedYIndex) {
-                    BarEntry entry = barArraylist.get(x);
-                    Log.d(TAG, barChart.toString());
+                int x = lineChart.getLineData().getDataSetForEntry(e).getEntryIndex(e);
+                if (x + 1 >= lineDataList.size()) {
+                    textToSpeech.speak("End of chart", TextToSpeech.QUEUE_FLUSH, null);
+                } else {
+                    Entry entry = lineDataList.get(x);
+                    Entry nextEntry = lineDataList.get(x + 1);
+                    float currentYValue = entry.getY();
+                    float nextYValue = nextEntry.getY();
+                    float yDiff = nextYValue - currentYValue;
                     if (shouldSpeak) {
-                        textToSpeech.speak(String.valueOf(entry.getY()), TextToSpeech.QUEUE_FLUSH, null);
+                        if (yDiff < 0) {
+                            textToSpeech.speak("Go down", TextToSpeech.QUEUE_FLUSH, null);
+                        } else {
+                            textToSpeech.speak("Go up", TextToSpeech.QUEUE_FLUSH, null);
+                        }
                     }
                     if (shouldVibrate) {
                         vibrate(entry.getY());
                     }
-                } else {
-                    barChart.highlightValue(null);
                 }
             }
 
             @Override
             public void onNothingSelected() {
                 if (shouldSpeak) {
-                    //textToSpeech.speak("No data", TextToSpeech.QUEUE_FLUSH, null);
+                    textToSpeech.speak("No data", TextToSpeech.QUEUE_FLUSH, null);
                 }
             }
         });
@@ -242,13 +189,12 @@ public class BarChartActivitySpeechToTextActivity extends AppCompatActivity {
      * Texttospeech functionality of summary. Called on opening the graph.
      */
     private void provideSummary() {
-//        if (shouldSpeak) {
-//            textToSpeech.addSpeech("Summary", "com.nopalyer.mpchart", R.raw.sample_sound);
-//            textToSpeech.speak("This is a sample bar graph with x axis representing test1 value " +
-//                    "and y axis representing test2 value. Different colors are used for each bar. " +
-//                    "Whitespace is represented using No Data. A google assistant button is " +
-//                    "located at the top left corner to help you with any queries", TextToSpeech.QUEUE_FLUSH, null);
-//        }/'
+        if (shouldSpeak) {
+            textToSpeech.speak("This is a sample line graph with x axis representing time in years " +
+                    "and y axis representing human population in millions." +
+                    "Whitespace is represented using the phrase No Data. A google assistant button is " +
+                    "located at the top left corner to help you with any queries", TextToSpeech.QUEUE_FLUSH, null);
+        }
     }
 
     /**
@@ -294,7 +240,7 @@ public class BarChartActivitySpeechToTextActivity extends AppCompatActivity {
                 try {
                     startActivityForResult(intent, REQUEST_CODE_SPEECH_INPUT);
                 } catch (Exception e) {
-                    Toast.makeText(BarChartActivitySpeechToTextActivity.this, " " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, e.getMessage());
                 }
             }
         });
@@ -370,86 +316,45 @@ public class BarChartActivitySpeechToTextActivity extends AppCompatActivity {
     private void respondToEnableFeatures(final FEATURES feature, final boolean enable) {
         if (feature == FEATURES.AUDIO) {
             if (enable) {
-                if (shouldSpeak) {
-                    speakAnswer(GeneralSpokenConstants.VOICE_FEEDBACK_ALREADY_SWITCHED_ON);
-                } else {
-                    speakAnswer(GeneralSpokenConstants.VOICE_FEEDBACK_SWITCHED_ON);
-                }
                 shouldSpeak = true;
+                speakAnswer(GeneralSpokenConstants.VOICE_FEEDBACK_SWITCHED_ON);
             } else {
-                if (!shouldSpeak) {
-                    speakAnswer(GeneralSpokenConstants.VOICE_FEEDBACK_ALREADY_SWITCHED_OFF);
-                } else {
-                    speakAnswer(GeneralSpokenConstants.VOICE_FEEDBACK_SWITCHED_OFF);
-                }
                 shouldSpeak = false;
+                speakAnswer(GeneralSpokenConstants.VOICE_FEEDBACK_SWITCHED_OFF);
             }
         } else {
             if (enable) {
-                if (shouldVibrate) {
-                    speakAnswer(GeneralSpokenConstants.TACTILE_FEEDBACK_ALREADY_SWITCHED_ON);
-                } else {
-                    speakAnswer(GeneralSpokenConstants.TACTILE_FEEDBACK_SWITCHED_ON);
-                }
                 shouldVibrate = true;
+                speakAnswer(GeneralSpokenConstants.TACTILE_FEEDBACK_SWITCHED_ON);
             } else {
-                if (!shouldVibrate) {
-                    speakAnswer(GeneralSpokenConstants.TACTILE_FEEDBACK_ALREADY_SWITCHED_OFF);
-                } else {
-                    speakAnswer(GeneralSpokenConstants.TACTILE_FEEDBACK_SWITCHED_OFF);
-                }
                 shouldVibrate = false;
+                speakAnswer(GeneralSpokenConstants.TACTILE_FEEDBACK_SWITCHED_OFF);
             }
         }
     }
 
     private void answerPredefinedQuestions(@NonNull String question) {
         Log.d(TAG, "Question : " + question);
-        if (question.contains(QuestionConstants.CRITICAL_POINTS)) {
-            speakAnswer(QuestionConstants.answers.get(3));
-        } else if (question.contains(QuestionConstants.STACKED_BAR_CHART)) {
-            speakAnswer(isStackedBarChart
-                    ? AnswerConstants.STACKED_BAR_CHART_ANSWER_YES
-                    : AnswerConstants.STACKED_BAR_CHART_ANSWER_NO);
-        } else if (question.contains(QuestionConstants.DESCRIBE_THE_GRAPH)) {
-            speakAnswer(QuestionConstants.answers.get(0));
-        } else if (question.contains(QuestionConstants.TACTILE_ON_OFF)) {
-            speakAnswer(shouldVibrate ? AnswerConstants.TACTILE_ANSWER_YES
-                    : AnswerConstants.TACTILE_ANSWER_NO);
-        } else if (question.contains(QuestionConstants.X_AND_Y)) {
-            speakAnswer(QuestionConstants.answers.get(1) + QuestionConstants.answers.get(2));
-        } else if (question.contains(QuestionConstants.TALLEST_BAR)) {
-            calculateTallestBar();
-            speakAnswer(QuestionConstants.answers.get(6));
-        } else if (question.contains(QuestionConstants.SMALLEST_BAR)) {
-            calculateSmallestBar();
-            speakAnswer(QuestionConstants.answers.get(7));
-        } else if (question.contains(QuestionConstants.BARS_HORIZONTALLY_VERTICALLY)) {
-            speakAnswer(QuestionConstants.answers.get(5));
-        } else if (question.contains(QuestionConstants.BARS_BELOW_ABOVE_AXIS)) {
-            if (graphAxis == GRAPH_AXIS.ABOVE_AXIS) {
-                speakAnswer(AnswerConstants.BARS_ABOVE_AXIS_ANSWER);
-            } else if (graphAxis == GRAPH_AXIS.BELOW_AXIS) {
-                speakAnswer(AnswerConstants.BARS_BELOW_AXIS_ANSWER);
-            } else {
-                speakAnswer(AnswerConstants.BARS_BELOW_ABOVE_AXIS_ANSWER);
+        if (question.contains(QuestionConstants.SOLID_DASHED_LINE)) {
+            speakAnswer(isSolidLine ? AnswerConstants.SOLID_LINE : AnswerConstants.DASHED_LINE);
+        }  else if (question.contains(QuestionConstants.HIGHEST_POINT_LINE)) {
+            float highestLinePoint = 0;
+            for (Entry entry : lineDataList) {
+                highestLinePoint = Math.max(highestLinePoint, entry.getY());
             }
-        } else if (question.contains(QuestionConstants.BARS_CONTINUOUS)) {
-            speakAnswer(QuestionConstants.answers.get(8));
-        } else {
-            speakAnswer(AnswerConstants.DFEAULT);
-        }
-    }
-
-    private void calculateTallestBar() {
-        for (BarEntry barEntry : barArraylist) {
-            maxBarValue = Math.max(maxBarValue, (int) barEntry.getY());
-        }
-    }
-
-    private void calculateSmallestBar() {
-        for (BarEntry barEntry : barArraylist) {
-            minBarValue = Math.min(minBarValue, (int) barEntry.getY());
+            speakAnswer(AnswerConstants.HIGHEST_POINT_LINE + "" + highestLinePoint);
+        } else if (question.contains(QuestionConstants.LOWEST_POINT_LINE)) {
+            float lowestLinePoint = 0;
+            for (Entry entry : lineDataList) {
+                lowestLinePoint = Math.min(lowestLinePoint, entry.getY());
+            }
+            speakAnswer(AnswerConstants.LOWEST_POINT_LINE + " " + lowestLinePoint);
+        } else if (question.contains(QuestionConstants.DESCRIBE_THE_GRAPH)) {
+            speakAnswer(AnswerConstants.DESCRIBE_THE_GRAPH_LINE_CHART_ANSWER);
+        } else if (question.contains(QuestionConstants.X_AND_Y)) {
+            speakAnswer(AnswerConstants.X_AND_Y_ANSWER);
+        } else if (question.contains(QuestionConstants.TACTILE_ON_OFF)) {
+            speakAnswer(shouldVibrate ? AnswerConstants.TACTILE_ANSWER_YES : AnswerConstants.TACTILE_ANSWER_NO);
         }
     }
 
@@ -458,14 +363,55 @@ public class BarChartActivitySpeechToTextActivity extends AppCompatActivity {
         textToSpeech.speak(answer, TextToSpeech.QUEUE_FLUSH, null);
     }
 
-    /**
-     * Test data to make bars
-     */
-    private void getData() {
-        barArraylist = new ArrayList<>();
-        barArraylist.add(new BarEntry(3f, 1.5f));
-        barArraylist.add(new BarEntry(4f, 2.7f));
-        barArraylist.add(new BarEntry(5f, 3.6f));
-        barArraylist.add(new BarEntry(6f, 5.2f));
+    private ArrayList<Entry> getLineChartDataSet() {
+        ArrayList<Entry> dataSet = new ArrayList<Entry>();
+        Entry entry = new Entry(0, 4);
+        dataSet.add(entry);
+        lineDataList.add(entry);
+        entry = new Entry(1, 1);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        entry = new Entry(2, 5);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        entry = new Entry(3, 12);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        entry = new Entry(4, 9);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        entry = new Entry(5, 18);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        entry = new Entry(6, 17);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        return dataSet;
+    }
+
+    private ArrayList<Entry> getLineChartDataSet2() {
+        ArrayList<Entry> dataSet = new ArrayList<Entry>();
+        Entry entry = new Entry(0, 4);
+        dataSet.add(entry);
+        lineDataList.add(entry);
+        entry = new Entry(1, 3);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        entry = new Entry(2, 6);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        entry = new Entry(3, 9);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        entry = new Entry(4, 8);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        entry = new Entry(5, 3);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        entry = new Entry(6, 7);
+        lineDataList.add(entry);
+        dataSet.add(entry);
+        return dataSet;
     }
 }

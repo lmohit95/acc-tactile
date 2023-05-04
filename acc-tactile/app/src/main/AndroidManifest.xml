@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
+            android:name=".GraphSummaryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LineChartSpeechToTextActivity"
+            android:exported="false" />
+        <activity
             android:name=".BarChartActivitySpeechToTextActivity"
             android:exported="false" />
         <activity

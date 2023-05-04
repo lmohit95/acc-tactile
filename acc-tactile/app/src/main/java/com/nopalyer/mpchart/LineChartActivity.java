@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
@@ -18,6 +19,8 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.listener.ChartTouchListener;
+import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import java.util.ArrayList;
@@ -30,6 +33,8 @@ public class LineChartActivity extends AppCompatActivity {
     private LineChart lineChart;
     private TextToSpeech textToSpeech;
     private boolean shouldVibrate = true;
+    private float selectedYIndex = -1;
+    private float selectedXIndex = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,24 +98,72 @@ public class LineChartActivity extends AppCompatActivity {
             }
         });
 
+        lineChart.setOnChartGestureListener(new OnChartGestureListener() {
+            @Override
+            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+
+            }
+
+            @Override
+            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+
+            }
+
+            @Override
+            public void onChartLongPressed(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartDoubleTapped(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartSingleTapped(MotionEvent me) {
+                Entry entry = lineChart.getEntryByTouchPoint(me.getX(), me.getY());
+                if (entry != null) {
+                    selectedYIndex = me.getY();
+                    selectedXIndex = me.getX();
+                }
+            }
+
+            @Override
+            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
+
+            }
+
+            @Override
+            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
+
+            }
+
+            @Override
+            public void onChartTranslate(MotionEvent me, float dX, float dY) {
+
+            }
+        });
+
         lineChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @RequiresApi(api = Build.VERSION_CODES.Q)
             @Override
             public void onValueSelected(Entry e, Highlight h) {
                 Log.d(TAG, h.toString() + " " + e.toString());
-                int x = lineChart.getLineData().getDataSetForEntry(e).getEntryIndex(e);
-                if (x + 1 >= lineDataList.size()) {
-                    textToSpeech.speak("End of chart", TextToSpeech.QUEUE_FLUSH, null);
-                } else {
-                    Entry entry = lineDataList.get(x);
-                    Entry nextEntry = lineDataList.get(x + 1);
-                    float currentYValue = entry.getY();
-                    float nextYValue = nextEntry.getY();
-                    float yDiff = nextYValue - currentYValue;
-                    if (yDiff < 0) {
-                        textToSpeech.speak("Go down", TextToSpeech.QUEUE_FLUSH, null);
+                if (h.getYPx() <= selectedYIndex && h.getXPx() <= selectedXIndex) {
+                    int x = lineChart.getLineData().getDataSetForEntry(e).getEntryIndex(e);
+                    if (x + 1 >= lineDataList.size()) {
+                        textToSpeech.speak("End of chart", TextToSpeech.QUEUE_FLUSH, null);
                     } else {
-                        textToSpeech.speak("Go up", TextToSpeech.QUEUE_FLUSH, null);
+                        Entry entry = lineDataList.get(x);
+                        Entry nextEntry = lineDataList.get(x + 1);
+                        float currentYValue = entry.getY();
+                        float nextYValue = nextEntry.getY();
+                        float yDiff = nextYValue - currentYValue;
+                        if (yDiff < 0) {
+                            textToSpeech.speak("Go down", TextToSpeech.QUEUE_FLUSH, null);
+                        } else {
+                            textToSpeech.speak("Go up", TextToSpeech.QUEUE_FLUSH, null);
+                        }
                     }
                 }
             }

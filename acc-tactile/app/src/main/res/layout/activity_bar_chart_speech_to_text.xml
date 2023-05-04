@@ -8,18 +8,20 @@
 
     <Button
         android:id="@+id/speechToText"
-        android:layout_width="60dp"
-        android:layout_height="80dp"
-        android:elevation="2dp"
-        android:background="@drawable/mic"
         style="@style/ThemeOverlay.MaterialComponents.Dark"
-        android:textStyle="bold"
-        android:layout_alignParentStart="true" />
+        android:layout_width="30dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="10dp"
+        android:layout_alignParentStart="true"
+        android:background="@drawable/mic"
+        android:elevation="2dp"
+        android:textStyle="bold" />
 
     <TextView
         android:layout_alignParentBottom="true"
         android:id="@+id/xlabel"
-        android:text="Year"
+        android:text="Time in years"
         android:layout_marginBottom="10dp"
         android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
@@ -28,18 +30,17 @@
     <TextView
         android:id="@+id/ylabel"
         android:layout_centerVertical="true"
-        android:text="Time"
-        android:gravity="center"
-        android:rotation="270"
+        android:text="Human population"
+        android:rotation="90"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
 
     <com.github.mikephil.charting.charts.BarChart
-        android:layout_marginBottom="30dp"
-        android:layout_marginStart="20dp"
         android:id="@+id/barchart"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="30dp" />
 
 </RelativeLayout>

@@ -9,7 +9,7 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button btnLineChart, btnBarChart, btnPieChart, btnBarChartSpeechToText;
+    Button btnLineChart, btnBarChart, btnPieChart, btnBarChartSpeechToText, btnLineChartSpeechToText, addInformation;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -18,7 +18,9 @@ public class MainActivity extends AppCompatActivity {
         btnLineChart = findViewById(R.id.btnLineChart);
         btnBarChart = findViewById(R.id.btnBarChart);
         btnPieChart = findViewById(R.id.btnPieChart);
+        addInformation = findViewById(R.id.addInformation);
         btnBarChartSpeechToText = findViewById(R.id.btnBarChartSpeechToText);
+        btnLineChartSpeechToText = findViewById(R.id.btnLineChartSpeechToText);
         btnLineChart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -55,6 +57,30 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this,PieChartActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        btnPieChart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this,PieChartActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        btnLineChartSpeechToText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this,LineChartSpeechToTextActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        addInformation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this,GraphSummaryActivity.class);
                 startActivity(intent);
             }
         });
